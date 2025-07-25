@@ -1,0 +1,229 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table Person {
+  id Int [pk, increment]
+  firstname String
+  lastname String
+  phone String
+  mobilePhone String
+  mobilePhoneShortcut String
+  titleBefore String
+  titleAfter String
+  personalNumber String
+  email String [unique, not null]
+  jobs Job [not null]
+  createdDate DateTime [default: `now()`, not null]
+  createdBy Int
+  modifiedDate DateTime [not null]
+  modifiedBy Int
+  oid String [not null]
+  permissions Permission [not null]
+}
+
+Table Job {
+  id Int [pk, increment]
+  personId Int [not null]
+  person Person [not null]
+  premisesId Int
+  premises Premises
+  clinicId Int [not null]
+  clinic Clinic [not null]
+  sectionId Int [not null]
+  section Section [not null]
+  jobPositionId Int
+  jobPosition JobPosition
+  jobInternalId String [not null]
+  phoneExtension String
+  comment String
+  isPublic Boolean
+  jobStartDate DateTime
+  jobEndDate DateTime
+  createdDate DateTime [default: `now()`, not null]
+  createdBy Int
+  modifiedDate DateTime [not null]
+  modifiedBy Int
+}
+
+Table Premises {
+  id Int [pk, increment]
+  name String [not null]
+  active Boolean [not null, default: true]
+  jobs Job [not null]
+  externalOrganizations ExternalOrganization [not null]
+  internalServices InternalService [not null]
+  pneumaticPosts PneumaticPost [not null]
+}
+
+Table Clinic {
+  id Int [pk, increment]
+  code String
+  name String [not null]
+  abbr String
+  active Boolean [not null, default: true]
+  jobs Job [not null]
+  sections Section [not null]
+  pneumaticPosts PneumaticPost [not null]
+  internalServices InternalService [not null]
+  permissions Permission [not null]
+}
+
+Table Section {
+  id Int [pk, increment]
+  code String
+  name String [not null]
+  abbr String
+  active Boolean [not null, default: true]
+  jobs Job [not null]
+  clinicId Int [not null]
+  clinic Clinic [not null]
+  pneumaticPosts PneumaticPost [not null]
+  internalServices InternalService [not null]
+}
+
+Table JobPosition {
+  id Int [pk, increment]
+  name String [not null]
+  referenceNumber String [not null]
+  active Boolean [not null, default: true]
+  jobs Job [not null]
+  externalOrganizations ExternalOrganization [not null]
+}
+
+Table Service {
+  id Int [pk, increment]
+  name String [not null]
+  active Boolean [not null, default: true]
+  pneumaticPosts PneumaticPost [not null]
+  externalOrganizations ExternalOrganization [not null]
+  internalServices InternalService [not null]
+}
+
+Table PneumaticPost {
+  id Int [pk, increment]
+  type Int [not null]
+  clinicId Int [not null]
+  clinic Clinic [not null]
+  sectionId Int
+  section Section
+  serviceId Int
+  service Service
+  name String
+  continuousService Boolean [not null, default: false]
+  phone1Extension String [not null]
+  phone2Extension String [not null]
+  comment String
+  createdDate DateTime [default: `now()`, not null]
+  createdBy Int
+  modifiedDate DateTime [not null]
+  modifiedBy Int
+  premisesId Int
+  premises Premises
+}
+
+Table ExternalOrganization {
+  id Int [pk, increment]
+  companyName String
+  firstname String
+  lastname String
+  titles String
+  jobPositionId Int
+  jobPosition JobPosition
+  serviceId Int
+  service Service
+  continuousService Boolean [not null, default: false]
+  premisesId Int [not null]
+  premises Premises [not null]
+  phoneExtension String
+  mobilePhone String
+  mobilePhoneShortcut String
+  email String
+  comment String
+  openFromTo String
+  isPublic Boolean [not null, default: false]
+  createdDate DateTime [default: `now()`, not null]
+  createdBy Int
+  modifiedDate DateTime [not null]
+  modifiedBy Int
+}
+
+Table InternalService {
+  id Int [pk, increment]
+  name String [not null]
+  serviceId Int
+  service Service
+  continuousService Boolean [not null, default: false]
+  premisesId Int [not null]
+  premises Premises [not null]
+  clinicId Int
+  clinic Clinic
+  sectionId Int
+  section Section
+  phoneExtension String
+  mobilePhone String
+  email String
+  comment String
+  isPublic Boolean [not null, default: false]
+  createdDate DateTime [default: `now()`, not null]
+  createdBy Int
+  modifiedDate DateTime [not null]
+  modifiedBy Int
+}
+
+Table File {
+  id Int [pk, increment]
+  type String [not null]
+  hash String [not null]
+}
+
+Table Permission {
+  id Int [pk, increment]
+  role String [not null]
+  personId Int [not null]
+  person Person [not null]
+  clinicId Int
+  clinic Clinic
+
+  indexes {
+    (personId, role, clinicId) [unique]
+  }
+}
+
+Ref: Job.personId > Person.id
+
+Ref: Job.premisesId > Premises.id
+
+Ref: Job.clinicId > Clinic.id
+
+Ref: Job.sectionId > Section.id [delete: No Action]
+
+Ref: Job.jobPositionId > JobPosition.id
+
+Ref: Section.clinicId > Clinic.id
+
+Ref: PneumaticPost.clinicId > Clinic.id
+
+Ref: PneumaticPost.sectionId > Section.id [delete: No Action]
+
+Ref: PneumaticPost.serviceId > Service.id
+
+Ref: PneumaticPost.premisesId > Premises.id
+
+Ref: ExternalOrganization.jobPositionId > JobPosition.id
+
+Ref: ExternalOrganization.serviceId > Service.id
+
+Ref: ExternalOrganization.premisesId > Premises.id
+
+Ref: InternalService.serviceId > Service.id
+
+Ref: InternalService.premisesId > Premises.id
+
+Ref: InternalService.clinicId > Clinic.id
+
+Ref: InternalService.sectionId > Section.id [delete: No Action]
+
+Ref: Permission.personId > Person.id
+
+Ref: Permission.clinicId > Clinic.id

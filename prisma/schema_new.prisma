@@ -1,0 +1,208 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+model Person {
+  id                  Int          @id @default(autoincrement())
+  firstname           String?
+  lastname            String?
+  phone               String?
+  mobilePhone         String?
+  mobilePhoneShortcut String?
+  titleBefore         String?
+  titleAfter          String?
+  personalNumber      String?
+  email               String       @unique
+  jobs                Job[]
+  createdDate         DateTime     @default(now())
+  createdBy           Int?
+  modifiedDate        DateTime     @updatedAt
+  modifiedBy          Int?
+  oid                 String       @default(uuid())
+  permissions         Permission[]
+
+  @@index([mobilePhone])
+  @@index([phone])
+  @@index([mobilePhoneShortcut])
+}
+
+model Job {
+  id             Int         @id @default(autoincrement())
+  personId       Int
+  person         Person      @relation(fields: [personId], references: [id])
+  premisesId     Int?
+  premises       Premises?   @relation(fields: [premisesId], references: [id])
+  clinicId       Int
+  clinic         Clinic      @relation(fields: [clinicId], references: [id])
+  sectionId      Int
+  section        Section     @relation(fields: [sectionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobPositionId  Int?
+  jobPosition    JobPosition? @relation(fields: [jobPositionId], references: [id])
+  jobInternalId  String
+  phoneExtension String? // klapka
+  comment        String?
+  isPublic       Boolean? 
+  jobStartDate      DateTime?
+  jobEndDate        DateTime?    
+  createdDate    DateTime    @default(now())
+  createdBy      Int?
+  modifiedDate   DateTime    @updatedAt
+  modifiedBy     Int?
+}
+
+model Premises {
+  id                    Int                    @id @default(autoincrement())
+  name                  String
+  active                Boolean                @default(true)
+  jobs                  Job[]
+  externalOrganizations ExternalOrganization[]
+  internalServices      InternalService[]
+  pneumaticPosts   PneumaticPost[]
+}
+
+model Clinic {
+  id               Int               @id @default(autoincrement())
+  code             String?
+  name             String
+  abbr             String?
+  active           Boolean           @default(true)
+  jobs             Job[]
+  sections         Section[]
+  pneumaticPosts   PneumaticPost[]
+  internalServices InternalService[]
+  permissions      Permission[]
+}
+
+model Section {
+  id               Int               @id @default(autoincrement())
+  code             String?
+  name             String
+  abbr             String?
+  active           Boolean           @default(true)
+  jobs             Job[]
+  clinicId         Int
+  clinic           Clinic            @relation(fields: [clinicId], references: [id])
+  pneumaticPosts   PneumaticPost[]
+  internalServices InternalService[]
+}
+
+model JobPosition {
+  id                    Int                    @id @default(autoincrement())
+  name                 String
+  referenceNumber       String
+  active                Boolean                @default(true)
+  jobs                  Job[]
+  externalOrganizations ExternalOrganization[]
+}
+
+model Service {
+  id                    Int                    @id @default(autoincrement())
+  name                  String
+  active                Boolean                @default(true)
+  pneumaticPosts        PneumaticPost[]
+  externalOrganizations ExternalOrganization[]
+  internalServices      InternalService[]
+}
+
+model PneumaticPost {
+  id                Int      @id @default(autoincrement())
+  type              Int
+  clinicId          Int
+  clinic            Clinic   @relation(fields: [clinicId], references: [id])
+  sectionId         Int?
+  section           Section? @relation(fields: [sectionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  serviceId         Int?
+  service           Service?  @relation(fields: [serviceId], references: [id])
+  name              String?
+  continuousService Boolean  @default(false)
+  phone1Extension    String
+  phone2Extension    String
+  comment           String?
+  createdDate       DateTime @default(now())
+  createdBy         Int?
+  modifiedDate      DateTime @updatedAt
+  modifiedBy        Int?
+  premisesId         Int?
+  premises           Premises? @relation(fields: [premisesId], references: [id])
+}
+
+model ExternalOrganization {
+  id                  Int          @id @default(autoincrement())
+  companyName         String?
+  firstname           String?
+  lastname            String?
+  titles              String?
+  jobPositionId       Int?
+  jobPosition         JobPosition? @relation(fields: [jobPositionId], references: [id])
+  serviceId           Int?
+  service             Service?     @relation(fields: [serviceId], references: [id])
+  continuousService   Boolean      @default(false)
+  premisesId          Int
+  premises            Premises     @relation(fields: [premisesId], references: [id])
+  phoneExtension      String?
+  mobilePhone         String?
+  mobilePhoneShortcut String?
+  email               String?
+  comment             String?
+  openFromTo          String?
+  isPublic            Boolean      @default(false)
+  createdDate         DateTime     @default(now())
+  createdBy           Int?
+  modifiedDate        DateTime     @updatedAt
+  modifiedBy          Int?
+}
+
+model InternalService {
+  id                Int      @id @default(autoincrement())
+  name              String
+  serviceId         Int?
+  service           Service?  @relation(fields: [serviceId], references: [id])
+  continuousService Boolean  @default(false)
+  premisesId        Int
+  premises          Premises @relation(fields: [premisesId], references: [id])
+  clinicId          Int?
+  clinic            Clinic?  @relation(fields: [clinicId], references: [id])
+  sectionId         Int?
+  section           Section? @relation(fields: [sectionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  phoneExtension    String?
+  mobilePhone       String?
+  email             String?
+  comment           String?
+  isPublic          Boolean  @default(false)
+  createdDate       DateTime @default(now())
+  createdBy         Int?
+  modifiedDate      DateTime @updatedAt
+  modifiedBy        Int?
+}
+
+model File {
+  id     Int    @id @default(autoincrement())
+  type   String
+  hash   String @db.NVarChar(4000)
+}
+
+model Permission {
+  id       Int     @id @default(autoincrement())
+  role     String
+  personId Int
+  person   Person  @relation(fields: [personId], references: [id])
+  clinicId Int?
+  clinic   Clinic? @relation(fields: [clinicId], references: [id])
+  @@unique([personId, role, clinicId],name: "person_role_unique")
+}
