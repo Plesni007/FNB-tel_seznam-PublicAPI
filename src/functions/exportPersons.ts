@@ -16,7 +16,8 @@ export async function getPersons(req: HttpRequest, context: InvocationContext): 
   {
     const start = parseIntWithDefaultValue(req.query.get("start"), 0);
     const limit = parseIntWithDefaultValue(req.query.get("limit"), 1000000000);
-    const onlyPublic = true;
+    const onlyPublic = req.query.get("onlyPublic") === "true";
+    console.log("onlyPublic:", onlyPublic);
 
     const filters = onlyPublic
       ? {
@@ -65,8 +66,10 @@ export async function getPersons(req: HttpRequest, context: InvocationContext): 
           jobInternalId: job.jobInternalId,
           clinicCode: job.clinic.code,
           abbr: job.clinic.abbr,
+          sectionName: job.section.name,
           sectionCode: job.section.code,
           premisesName: job.premises?.name,
+          jobTitle: job.jobPosition?.name,
           jobReferenceNumber: job.jobPosition?.referenceNumber,
           phoneExtension: job.phoneExtension,
           comment: job.comment,
